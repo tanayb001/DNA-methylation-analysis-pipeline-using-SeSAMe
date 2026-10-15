@@ -1,0 +1,64 @@
+# Raw methylation data
+data/
+*.idat
+*.idat.gz
+*.tar
+
+# Generated outputs
+results/
+output/
+outputs/
+reports/
+logs/
+
+# Local and private configuration
+config/config.yaml
+config/local*
+metadata/local*
+metadata/private*
+metadata/sample_sheet_GSE282574.csv
+
+# Local environments and secrets
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# R temporary files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Backups and editor files
+*.backup
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Large intermediate files
+*.rds
+*.RDS
+*.h5
+*.h5ad
+*.bam
+*.bai
+*.cram
+*.crai
+*.fastq.gz
+
+# User-specific sample sheet
+metadata/sample_sheet.csv

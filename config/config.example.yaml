@@ -1,0 +1,66 @@
+# ============================================================================
+# Pipeline configuration  -- the ONLY file you normally need to edit
+# All paths are RELATIVE to the repository root
+# ============================================================================
+project_name: example_methylation_study
+seed: 42
+n_cores: 1              # 1 = serial (safest). Raise to 2-4 only if your server allows it
+genome: hg38            # EPICv2 / EPICv1 (SeSAMe hg38 manifest). Only hg38 annotation is implemented.
+platform: auto          # auto = inferred from the IDATs (EPICv2, EPIC, HM450 ...)
+
+paths:
+  idat_dir: data/raw                  # folder holding *_Grn.idat(.gz) / *_Red.idat(.gz)
+  work_idat_dir: data/idat_unzipped   # created by step 01 (decompressed copies)
+  sample_sheet: metadata/sample_sheet.csv
+  results_dir: results
+
+# Column names in YOUR sample sheet (so you can reuse other sheets unchanged)
+sample_cols:
+  sample_id: sample_id    # IDAT file prefix OR a unique leading part of it (e.g. GSM id)
+  patient: patient        # biological unit; replicates of one patient share this value
+  group: group            # comparison groups; empty/NA group => sample excluded
+
+contrast:
+  case: Case        # effect size (delta beta) = mean(case) - mean(reference)
+  reference: Control # e.g. PCa vs BPH  ->  case: PCa , reference: BPH
+
+covariates: []            # optional extra sample-sheet columns, e.g. [age, chip]
+
+qc:
+  metric: negctl                  # negctl | poobah_frac
+  max_mean_detp: 0.05             # negctl: drop arrays with mean detection p above this
+  min_frac_detected_poobah: 0.8   # poobah_frac: drop arrays with < this fraction of detected probes
+  stop_if_majority_fail: true     # abort instead of silently dropping most of the data
+
+preprocess:
+  sesame_prep: QCDPB      # SeSAMe recipe: mask(Q) channel(C) dye-bias(D) pOOBAH(P) noob(B)
+  keep_cg_only: true      # drop ch*/rs* probes
+  remove_sex_chr: true
+  max_na_fraction: 0.2    # drop probes masked (NA) in more than this fraction of samples
+  collapse_replicates: true   # average technical replicates per patient before testing
+
+exploratory:
+  n_top_variable: 5500    # most-variable probes for PCA / UMAP / heatmap
+  umap_n_neighbors: 15    # automatically reduced for small sample sizes
+  umap_min_dist: 0.3
+
+dm:
+  p_column: FDR           # FDR or P : column used to call significance
+  p_cutoff: 0.05
+  delta_beta_cutoff: 0.1
+  fallback_to_nominal: true   # if 0 probes pass on FDR, use nominal P (flagged as EXPLORATORY)
+  n_labels: 15
+
+annotation:
+  promoter_upstream: 2000
+  promoter_downstream: 500
+  max_nearest_distance: 100000   # intergenic probes further than this get no gene
+
+pathway:
+  fdr_cutoff: 0.05
+  min_genes: 10                  # min. significant genes needed to run over-representation
+  use_regions: [Promoter, Gene body]
+  top_n_plot: 20
+  msigdb:
+    - {name: Hallmark, collection: H,  subcollection: null}
+    - {name: Reactome, collection: C2, subcollection: "CP:REACTOME"}
